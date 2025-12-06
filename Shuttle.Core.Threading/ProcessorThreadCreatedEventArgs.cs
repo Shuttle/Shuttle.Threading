@@ -1,14 +1,8 @@
-using System;
 using Shuttle.Core.Contract;
 
 namespace Shuttle.Core.Threading;
 
-public class ProcessorThreadCreatedEventArgs : EventArgs
+public class ProcessorThreadCreatedEventArgs(ProcessorThread processorThread) : EventArgs
 {
-    public ProcessorThreadCreatedEventArgs(ProcessorThread processorThread)
-    {
-        ProcessorThread = Guard.AgainstNull(processorThread);
-    }
-
-    public ProcessorThread ProcessorThread { get; }
+    public ProcessorThread ProcessorThread { get; } = Guard.AgainstNull(processorThread);
 }

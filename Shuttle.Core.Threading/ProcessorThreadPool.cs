@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Reflection;
@@ -9,32 +6,29 @@ namespace Shuttle.Core.Threading;
 
 public class ProcessorThreadPool : IProcessorThreadPool
 {
-    private readonly List<ProcessorThread> _processorThreads = new();
+    private readonly List<ProcessorThread> _processorThreads = [];
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private bool _disposed;
     private bool _started;
+    private readonly ThreadingOptions _threadingOptions;
 
-    public ProcessorThreadPool(string name, int threadCount, IServiceScopeFactory serviceScopeFactory, IProcessorFactory processorFactory, ProcessorThreadOptions processorThreadOptions)
+    public ProcessorThreadPool(string name, int threadCount, IServiceScopeFactory serviceScopeFactory, IProcessorFactory processorFactory, ThreadingOptions threadingOptions)
     {
         if (threadCount < 1)
         {
             throw new ThreadCountZeroException();
         }
-
-
+        
         Name = name;
         _serviceScopeFactory = Guard.AgainstNull(serviceScopeFactory);
         ProcessorFactory = Guard.AgainstNull(processorFactory);
-        ThreadOptions = Guard.AgainstNull(processorThreadOptions);
+        _threadingOptions = Guard.AgainstNull(threadingOptions);
         ThreadCount = threadCount;
     }
 
     public string Name { get; }
     public IProcessorFactory ProcessorFactory { get; }
-    public ProcessorThreadOptions ThreadOptions { get; }
     public int ThreadCount { get; }
-
-    public event EventHandler<ProcessorThreadCreatedEventArgs>? ProcessorThreadCreated;
 
     public async Task StopAsync()
     {
@@ -48,12 +42,10 @@ public class ProcessorThreadPool : IProcessorThreadPool
 
     public void Dispose()
     {
-        Dispose(true);
-
-        GC.SuppressFinalize(this);
+        DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         if (_started)
         {
@@ -64,9 +56,9 @@ public class ProcessorThreadPool : IProcessorThreadPool
 
         while (i++ < ThreadCount)
         {
-            var processorThread = new ProcessorThread($"{Name} / {i}", _serviceScopeFactory, ProcessorFactory.Create(), ThreadOptions);
+            var processorThread = new ProcessorThread($"{Name} / {i}", _serviceScopeFactory, await ProcessorFactory.CreateAsync(cancellationToken), _threadingOptions);
 
-            ProcessorThreadCreated?.Invoke(this, new(processorThread));
+            await _threadingOptions.ProcessorThreadCreated.InvokeAsync(new(processorThread), cancellationToken);
 
             _processorThreads.Add(processorThread);
 
@@ -76,27 +68,24 @@ public class ProcessorThreadPool : IProcessorThreadPool
         _started = true;
     }
 
-    protected virtual void Dispose(bool disposing)
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
         {
             return;
         }
 
-        if (disposing)
+        foreach (var thread in _processorThreads)
         {
-            foreach (var thread in _processorThreads)
-            {
-                thread.Deactivate();
-            }
-
-            foreach (var thread in _processorThreads)
-            {
-                thread.StopAsync();
-            }
-
-            ProcessorFactory.TryDispose();
+            thread.Deactivate();
         }
+
+        foreach (var thread in _processorThreads)
+        {
+            await thread.StopAsync();
+        }
+
+        await ProcessorFactory.TryDisposeAsync();
 
         _disposed = true;
     }

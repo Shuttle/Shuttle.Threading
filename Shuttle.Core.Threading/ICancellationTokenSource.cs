@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Shuttle.Core.Threading;
+﻿namespace Shuttle.Core.Threading;
 
 public interface ICancellationTokenSource
 {

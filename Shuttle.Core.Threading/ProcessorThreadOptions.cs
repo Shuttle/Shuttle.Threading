@@ -1,11 +1,19 @@
-﻿using System;
-using System.Threading;
+﻿using Shuttle.Extensions.Options;
 
 namespace Shuttle.Core.Threading;
 
-public class ProcessorThreadOptions
+public class ThreadingOptions
 {
     public bool IsBackground { get; set; } = true;
     public TimeSpan JoinTimeout { get; set; } = TimeSpan.FromSeconds(15);
-    public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
+
+    public AsyncEvent<ProcessorThreadPoolCreatedEventArgs> ProcessorThreadPoolCreated { get; set; } = new();
+    public AsyncEvent<ProcessorThreadCreatedEventArgs> ProcessorThreadCreated { get; set; } = new();
+    public AsyncEvent<ProcessorThreadExceptionEventArgs> ProcessorException { get; set; } = new();
+    public AsyncEvent<ProcessorThreadEventArgs> ProcessorExecuting {get;set;} = new();
+    public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadActive {get;set;} = new();
+    public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadOperationCanceled {get;set;} = new();
+    public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadStarting {get;set;} = new();
+    public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadStopped {get;set;} = new();
+    public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadStopping {get;set;} = new();
 }

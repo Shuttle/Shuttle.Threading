@@ -2,5 +2,5 @@ namespace Shuttle.Core.Threading;
 
 public interface IProcessorFactory
 {
-    IProcessor Create();
+    Task<IProcessor> CreateAsync(CancellationToken cancellationToken = default);
 }

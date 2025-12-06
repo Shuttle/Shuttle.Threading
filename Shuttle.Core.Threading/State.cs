@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using Shuttle.Core.Contract;
 
 namespace Shuttle.Core.Threading;
@@ -17,12 +14,12 @@ public class State : IState
 
     public void Add(string key, object? value)
     {
-        _state.Add(Guard.AgainstNullOrEmptyString(key), value);
+        _state.Add(Guard.AgainstEmpty(key), value);
     }
 
     public void Replace(string key, object? value)
     {
-        if (_immutableKeys.Contains(Guard.AgainstNullOrEmptyString(key)))
+        if (_immutableKeys.Contains(Guard.AgainstEmpty(key)))
         {
             throw new InvalidOperationException(string.Format(Resources.ImmutableKeyException, key));
         }
@@ -33,17 +30,17 @@ public class State : IState
 
     public object? Get(string key)
     {
-        return _state.TryGetValue(Guard.AgainstNullOrEmptyString(key), out var result) ? result : default;
+        return _state.TryGetValue(Guard.AgainstEmpty(key), out var result) ? result : default;
     }
 
     public bool Contains(string key)
     {
-        return _state.ContainsKey(Guard.AgainstNullOrEmptyString(key));
+        return _state.ContainsKey(Guard.AgainstEmpty(key));
     }
 
     public bool Remove(string key)
     {
-        if (_immutableKeys.Contains(Guard.AgainstNullOrEmptyString(key)))
+        if (_immutableKeys.Contains(Guard.AgainstEmpty(key)))
         {
             throw new InvalidOperationException(string.Format(Resources.ImmutableKeyException, key));
         }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Shuttle.Core.Threading.Tests;
 
@@ -23,10 +18,10 @@ public class SharedCancellationTokenSourceFixture
 
             var tasks = new List<Task>
             {
-                Task.Run(() => Spin("A", cancellationToken)),
-                Task.Run(() => Spin("B", cancellationToken)),
-                Task.Run(() => Spin("C", cancellationToken)),
-                Task.Run(() => Spin("D", cancellationToken))
+                Task.Run(() => Spin("A", cancellationToken), cancellationToken),
+                Task.Run(() => Spin("B", cancellationToken), cancellationToken),
+                Task.Run(() => Spin("C", cancellationToken), cancellationToken),
+                Task.Run(() => Spin("D", cancellationToken), cancellationToken)
             };
 
             // wait for all the tasks to start
@@ -37,7 +32,7 @@ public class SharedCancellationTokenSourceFixture
 
             cancellationTokenSource.Get().Cancel();
 
-            Task.WaitAll(tasks.ToArray());
+            Task.WaitAll(tasks.ToArray(), CancellationToken.None);
         }
     }
 

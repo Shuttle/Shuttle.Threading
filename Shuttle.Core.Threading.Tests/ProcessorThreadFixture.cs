@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 
@@ -18,45 +15,61 @@ public class ProcessorThreadFixture
 
         serviceScopeFactory.Setup(m => m.CreateScope()).Returns(new Mock<IServiceScope>().Object);
 
+        var threadingOptions = new ThreadingOptions();
+
         var executionDuration = TimeSpan.FromMilliseconds(200);
         var mockProcessor = new MockProcessor(executionDuration);
-        var processorThread = new ProcessorThread("thread", serviceScopeFactory.Object, mockProcessor, new());
+        var processorThread = new ProcessorThread("thread", serviceScopeFactory.Object, mockProcessor, threadingOptions);
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
-        processorThread.ProcessorException += (sender, args) =>
+        threadingOptions.ProcessorException += (args, _) =>
         {
-            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorException] : name = '{args.Name}' / execution count = {((MockProcessor)((ProcessorThread)sender).Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId} / exception = '{args.Exception}'");
+            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorException] : name = '{args.ProcessorThread.Name}' / execution count = {((MockProcessor)args.ProcessorThread.Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId} / exception = '{args.Exception}'");
+
+            return Task.CompletedTask;
         };
 
-        processorThread.ProcessorExecuting += (sender, args) =>
+        threadingOptions.ProcessorExecuting += (args, _) =>
         {
-            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorExecuting] : name = '{args.Name}' / execution count = {((MockProcessor)((ProcessorThread)sender).Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorExecuting] : name = '{args.ProcessorThread.Name}' / execution count = {((MockProcessor)args.ProcessorThread.Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+
+            return Task.CompletedTask;
         };
 
-        processorThread.ProcessorThreadActive += (sender, args) =>
+        threadingOptions.ProcessorThreadActive += (args, _) =>
         {
-            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadActive] : name = '{args.Name}' / execution count = {((MockProcessor)((ProcessorThread)sender).Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadActive] : name = '{args.ProcessorThread.Name}' / execution count = {((MockProcessor)args.ProcessorThread.Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+
+            return Task.CompletedTask;
         };
 
-        processorThread.ProcessorThreadStarting += (sender, args) =>
+        threadingOptions.ProcessorThreadStarting += (args, _) =>
         {
-            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadStarting] : name = '{args.Name}' / execution count = {((MockProcessor)((ProcessorThread)sender).Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadStarting] : name = '{args.ProcessorThread.Name}' / execution count = {((MockProcessor)args.ProcessorThread.Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+
+            return Task.CompletedTask;
         };
 
-        processorThread.ProcessorThreadStopped += (sender, args) =>
+        threadingOptions.ProcessorThreadStopped += (args, _) =>
         {
-            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadStopped] : name = '{args.Name}' / execution count = {((MockProcessor)((ProcessorThread)sender).Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadStopped] : name = '{args.ProcessorThread.Name}' / execution count = {((MockProcessor)args.ProcessorThread.Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+
+            return Task.CompletedTask;
         };
 
-        processorThread.ProcessorThreadStopping += (sender, args) =>
+        threadingOptions.ProcessorThreadStopping += (args, _) =>
         {
-            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadStopping] : name = '{args.Name}' / execution count = {((MockProcessor)((ProcessorThread)sender).Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadStopping] : name = '{args.ProcessorThread.Name}' / execution count = {((MockProcessor)args.ProcessorThread.Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+
+            return Task.CompletedTask;
         };
 
-        processorThread.ProcessorThreadOperationCanceled += (sender, args) =>
+        threadingOptions.ProcessorThreadOperationCanceled += (args, _) =>
         {
-            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadOperationCanceled] : name = '{args.Name}' / execution count = {((MockProcessor)((ProcessorThread)sender).Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+            Console.WriteLine($@"{DateTime.Now:O} - [ProcessorThreadOperationCanceled] : name = '{args.ProcessorThread.Name}' / execution count = {((MockProcessor)args.ProcessorThread.Processor).ExecutionCount} / managed thread id = {args.ManagedThreadId}");
+
+            return Task.CompletedTask;
         };
 
         await processorThread.StartAsync();
@@ -71,7 +84,7 @@ public class ProcessorThreadFixture
             timedOut = DateTime.Now >= timeout;
         }
 
-        cancellationTokenSource.Cancel();
+        await cancellationTokenSource.CancelAsync();
 
         await processorThread.StopAsync();
 

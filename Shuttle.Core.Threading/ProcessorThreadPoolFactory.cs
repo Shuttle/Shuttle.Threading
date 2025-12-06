@@ -1,25 +1,19 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 
 namespace Shuttle.Core.Threading;
 
-public class ProcessorThreadPoolFactory : IProcessorThreadPoolFactory
+public class ProcessorThreadPoolFactory(IOptions<ThreadingOptions> threadingOptions, IServiceScopeFactory serviceScopeFactory) : IProcessorThreadPoolFactory
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ThreadingOptions _threadingOptions = Guard.AgainstNull(Guard.AgainstNull(threadingOptions).Value);
+    private readonly IServiceScopeFactory _serviceScopeFactory = Guard.AgainstNull(serviceScopeFactory);
 
-    public ProcessorThreadPoolFactory(IServiceScopeFactory serviceScopeFactory)
+    public async Task<IProcessorThreadPool> CreateAsync(string name, int threadCount, IProcessorFactory processorFactory, CancellationToken cancellationToken = default)
     {
-        _serviceScopeFactory = Guard.AgainstNull(serviceScopeFactory);
-    }
+        var result = new ProcessorThreadPool(name, threadCount, _serviceScopeFactory, processorFactory, _threadingOptions);
 
-    public event EventHandler<ProcessorThreadPoolCreatedEventArgs>? ProcessorThreadPoolCreated;
-
-    public IProcessorThreadPool Create(string name, int threadCount, IProcessorFactory processorFactory, ProcessorThreadOptions processorThreadOptions)
-    {
-        var result = new ProcessorThreadPool(name, threadCount, _serviceScopeFactory, processorFactory, processorThreadOptions);
-
-        ProcessorThreadPoolCreated?.Invoke(this, new(result));
+        await _threadingOptions.ProcessorThreadPoolCreated.InvokeAsync(new(result), cancellationToken);
 
         return result;
     }

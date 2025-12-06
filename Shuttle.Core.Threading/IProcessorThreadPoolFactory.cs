@@ -4,6 +4,5 @@ namespace Shuttle.Core.Threading;
 
 public interface IProcessorThreadPoolFactory
 {
-    IProcessorThreadPool Create(string name, int threadCount, IProcessorFactory processorFactory, ProcessorThreadOptions processorThreadOptions);
-    event EventHandler<ProcessorThreadPoolCreatedEventArgs> ProcessorThreadPoolCreated;
+    Task<IProcessorThreadPool> CreateAsync(string name, int threadCount, IProcessorFactory processorFactory, CancellationToken cancellationToken = default);
 }

@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Shuttle.Core.Contract;
 
 namespace Shuttle.Core.Threading;
@@ -15,7 +10,7 @@ public class ThreadActivity : IThreadActivity
 
     public ThreadActivity(IEnumerable<TimeSpan> waitDurations)
     {
-        Guard.AgainstEmptyEnumerable(waitDurations);
+        Guard.AgainstEmpty(waitDurations);
 
         _durations = waitDurations.ToArray();
         _durationIndex = 0;
