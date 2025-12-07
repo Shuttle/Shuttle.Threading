@@ -20,19 +20,17 @@ public static class ServiceCollectionExtensions
             {
                 options.IsBackground = threadingBuilder.Options.IsBackground;
                 options.JoinTimeout = threadingBuilder.Options.JoinTimeout;
-                options.Priority = threadingBuilder.Options.Priority;
 
-                options.PipelineCompleted = threadingBuilder.Options.PipelineCompleted;
-                options.PipelineCreated = threadingBuilder.Options.PipelineCreated;
-                options.PipelineObtained = threadingBuilder.Options.PipelineObtained;
-                options.PipelineRecursiveException = threadingBuilder.Options.PipelineRecursiveException;
-                options.PipelineReleased = threadingBuilder.Options.PipelineReleased;
-                options.PipelineStarting = threadingBuilder.Options.PipelineStarting;
-                options.StageCompleted = threadingBuilder.Options.StageCompleted;
-                options.StageStarting = threadingBuilder.Options.StageStarting;
+                options.ProcessorThreadPoolCreated = threadingBuilder.Options.ProcessorThreadPoolCreated;
+                options.ProcessorThreadCreated = threadingBuilder.Options.ProcessorThreadCreated;
+                options.ProcessorException = threadingBuilder.Options.ProcessorException;
+                options.ProcessorExecuting = threadingBuilder.Options.ProcessorExecuting;
+                options.ProcessorThreadActive = threadingBuilder.Options.ProcessorThreadActive;
+                options.ProcessorThreadOperationCanceled = threadingBuilder.Options.ProcessorThreadOperationCanceled;
+                options.ProcessorThreadStarting = threadingBuilder.Options.ProcessorThreadStarting;
+                options.ProcessorThreadStopped = threadingBuilder.Options.ProcessorThreadStopped;
+                options.ProcessorThreadStopping = threadingBuilder.Options.ProcessorThreadStopping;
             });
-
-            services.TryAddSingleton<IPipelineFactory, PipelineFactory>();
 
             return services;
         }

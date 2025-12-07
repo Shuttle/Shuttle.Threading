@@ -19,7 +19,7 @@ public class ProcessorThreadFixture
 
         var executionDuration = TimeSpan.FromMilliseconds(200);
         var mockProcessor = new MockProcessor(executionDuration);
-        var processorThread = new ProcessorThread("thread", serviceScopeFactory.Object, mockProcessor, threadingOptions);
+        var processorThread = new ProcessorThread("thread", new Mock<IProcessorThreadPool>().Object, mockProcessor, serviceScopeFactory.Object, threadingOptions);
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
@@ -72,7 +72,7 @@ public class ProcessorThreadFixture
             return Task.CompletedTask;
         };
 
-        await processorThread.StartAsync();
+        await processorThread.StartAsync(cancellationToken);
 
         var timeout = DateTime.Now.AddSeconds(500);
         var timedOut = false;

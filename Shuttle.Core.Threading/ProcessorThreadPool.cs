@@ -56,13 +56,13 @@ public class ProcessorThreadPool : IProcessorThreadPool
 
         while (i++ < ThreadCount)
         {
-            var processorThread = new ProcessorThread($"{Name} / {i}", _serviceScopeFactory, await ProcessorFactory.CreateAsync(cancellationToken), _threadingOptions);
+            var processorThread = new ProcessorThread($"{Name} / {i}", this, await ProcessorFactory.CreateAsync(cancellationToken), _serviceScopeFactory, _threadingOptions);
 
-            await _threadingOptions.ProcessorThreadCreated.InvokeAsync(new(processorThread), cancellationToken);
+            await _threadingOptions.ProcessorThreadCreated.InvokeAsync(new(this, processorThread), cancellationToken);
 
             _processorThreads.Add(processorThread);
 
-            await processorThread.StartAsync();
+            await processorThread.StartAsync(cancellationToken);
         }
 
         _started = true;
@@ -73,11 +73,6 @@ public class ProcessorThreadPool : IProcessorThreadPool
         if (_disposed)
         {
             return;
-        }
-
-        foreach (var thread in _processorThreads)
-        {
-            thread.Deactivate();
         }
 
         foreach (var thread in _processorThreads)
