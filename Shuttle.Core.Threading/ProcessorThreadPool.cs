@@ -37,21 +37,26 @@ public class ProcessorThreadPool : IProcessorThreadPool
 
         try
         {
-            if (!_started)
-            {
-                return;
-            }
-
-            foreach (var thread in _processorThreads)
-            {
-                await thread.StopAsync();
-            }
+            await StopThreadsAsync();
 
             _started = false;
         }
         finally
         {
             _lock.Release();
+        }
+    }
+
+    private async Task StopThreadsAsync()
+    {
+        if (!_started)
+        {
+            return;
+        }
+
+        foreach (var thread in _processorThreads)
+        {
+            await thread.StopAsync();
         }
     }
 
@@ -105,7 +110,7 @@ public class ProcessorThreadPool : IProcessorThreadPool
                 return;
             }
 
-            await StopAsync(CancellationToken.None);
+            await StopThreadsAsync();
 
             await ProcessorFactory.TryDisposeAsync();
 
