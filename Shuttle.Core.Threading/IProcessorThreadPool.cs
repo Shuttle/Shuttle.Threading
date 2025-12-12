@@ -7,5 +7,5 @@ public interface IProcessorThreadPool : IDisposable, IAsyncDisposable
     IEnumerable<ProcessorThread> ProcessorThreads { get; }
     int ThreadCount { get; }
     Task StartAsync(CancellationToken cancellationToken = default);
-    Task StopAsync();
+    Task StopAsync(CancellationToken cancellationToken = default);
 }

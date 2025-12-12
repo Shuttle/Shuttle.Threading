@@ -6,6 +6,7 @@ namespace Shuttle.Core.Threading;
 
 public class ProcessorThreadPool : IProcessorThreadPool
 {
+    private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly List<ProcessorThread> _processorThreads = [];
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private bool _disposed;
@@ -30,11 +31,27 @@ public class ProcessorThreadPool : IProcessorThreadPool
     public IProcessorFactory ProcessorFactory { get; }
     public int ThreadCount { get; }
 
-    public async Task StopAsync()
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var thread in _processorThreads)
+        await _lock.WaitAsync(cancellationToken);
+
+        try
         {
-            await thread.StopAsync();
+            if (!_started)
+            {
+                return;
+            }
+
+            foreach (var thread in _processorThreads)
+            {
+                await thread.StopAsync();
+            }
+
+            _started = false;
+        }
+        finally
+        {
+            _lock.Release();
         }
     }
 
@@ -47,41 +64,56 @@ public class ProcessorThreadPool : IProcessorThreadPool
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_started)
+        await _lock.WaitAsync(cancellationToken);
+
+        try
         {
-            return;
+            if (_started)
+            {
+                return;
+            }
+
+            var i = 0;
+
+            while (i++ < ThreadCount)
+            {
+                var processorThread = new ProcessorThread($"{Name} / {i}", this, await ProcessorFactory.CreateAsync(cancellationToken), _serviceScopeFactory, _threadingOptions);
+
+                await _threadingOptions.ProcessorThreadCreated.InvokeAsync(new(this, processorThread), cancellationToken);
+
+                _processorThreads.Add(processorThread);
+
+                await processorThread.StartAsync(cancellationToken);
+            }
+
+            _started = true;
         }
-
-        var i = 0;
-
-        while (i++ < ThreadCount)
+        finally
         {
-            var processorThread = new ProcessorThread($"{Name} / {i}", this, await ProcessorFactory.CreateAsync(cancellationToken), _serviceScopeFactory, _threadingOptions);
-
-            await _threadingOptions.ProcessorThreadCreated.InvokeAsync(new(this, processorThread), cancellationToken);
-
-            _processorThreads.Add(processorThread);
-
-            await processorThread.StartAsync(cancellationToken);
+            _lock.Release();
         }
-
-        _started = true;
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed)
+        await _lock.WaitAsync(CancellationToken.None);
+
+        try
         {
-            return;
-        }
+            if (_disposed)
+            {
+                return;
+            }
 
-        foreach (var thread in _processorThreads)
+            await StopAsync(CancellationToken.None);
+
+            await ProcessorFactory.TryDisposeAsync();
+
+            _disposed = true;
+        }
+        finally
         {
-            await thread.StopAsync();
+            _lock.Release();
         }
-
-        await ProcessorFactory.TryDisposeAsync();
-
-        _disposed = true;
     }
 }
