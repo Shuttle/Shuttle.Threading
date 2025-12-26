@@ -82,7 +82,7 @@ public class ProcessorThreadPool : IProcessorThreadPool
 
             while (i++ < ThreadCount)
             {
-                var processorThread = new ProcessorThread($"{Name} / {i}", this, await ProcessorFactory.CreateAsync(cancellationToken), _serviceScopeFactory, _threadingOptions);
+                var processorThread = new ProcessorThread($"{Name} / {i}", await ProcessorFactory.CreateAsync(cancellationToken), _serviceScopeFactory, _threadingOptions);
 
                 await _threadingOptions.ProcessorThreadCreated.InvokeAsync(new(this, processorThread), cancellationToken);
 

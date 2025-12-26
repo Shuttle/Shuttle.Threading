@@ -19,7 +19,7 @@ public class ProcessorThreadFixture
 
         var executionDuration = TimeSpan.FromMilliseconds(200);
         var mockProcessor = new MockProcessor(executionDuration);
-        var processorThread = new ProcessorThread("thread", new Mock<IProcessorThreadPool>().Object, mockProcessor, serviceScopeFactory.Object, threadingOptions);
+        var processorThread = new ProcessorThread("thread", mockProcessor, serviceScopeFactory.Object, threadingOptions);
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
