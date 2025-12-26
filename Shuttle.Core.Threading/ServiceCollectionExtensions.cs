@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shuttle.Core.Contract;
 
 namespace Shuttle.Core.Threading;
