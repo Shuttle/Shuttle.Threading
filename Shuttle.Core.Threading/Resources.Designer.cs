@@ -19,7 +19,7 @@ namespace Shuttle.Core.Threading {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -75,6 +75,24 @@ namespace Shuttle.Core.Threading {
         public static string ProcessorExecuting {
             get {
                 return ResourceManager.GetString("ProcessorExecuting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to At least one idle duration is required for name &apos;{0}&apos;..
+        /// </summary>
+        public static string ProcessorIdleOptionsDurationException {
+            get {
+                return ResourceManager.GetString("ProcessorIdleOptionsDurationException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no &apos;ProcessorIdleOptions` item with service key &apos;{0}&apos;, or the &apos;Durations&apos; list is empty..
+        /// </summary>
+        public static string ProcessorIdleOptionsMissingException {
+            get {
+                return ResourceManager.GetString("ProcessorIdleOptionsMissingException", resourceCulture);
             }
         }
         

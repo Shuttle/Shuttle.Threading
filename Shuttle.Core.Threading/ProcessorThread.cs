@@ -4,24 +4,20 @@ using Shuttle.Core.Reflection;
 
 namespace Shuttle.Core.Threading;
 
-public class ProcessorThread(string name, IProcessor processor, IServiceScopeFactory serviceScopeFactory, ThreadingOptions threadingOptions)
+public class ProcessorThread(string serviceKey, IServiceScopeFactory serviceScopeFactory, ThreadingOptions threadingOptions, IProcessorIdleStrategy processorIdleStrategy) : IProcessorThread
 {
+    private readonly IProcessorIdleStrategy _processorIdleStrategy = Guard.AgainstNull(processorIdleStrategy);
     private readonly IServiceScopeFactory _serviceScopeFactory = Guard.AgainstNull(serviceScopeFactory);
     private readonly ThreadingOptions _threadingOptions = Guard.AgainstNull(threadingOptions);
     private CancellationToken _cancellationToken;
-    private bool _started;
     private Task? _executionTask;
-
-    public string Name { get; } = Guard.AgainstNull(name);
-    public IProcessor Processor { get; } = Guard.AgainstNull(processor);
+    private bool _started;
     public int ManagedThreadId { get; private set; }
 
-    public IState State { get; } = new State();
+    public string ServiceKey { get; } = Guard.AgainstNull(serviceKey);
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        State.Add("Name", Name);
-
         if (_started)
         {
             return;
@@ -44,8 +40,6 @@ public class ProcessorThread(string name, IProcessor processor, IServiceScopeFac
         {
             throw new InvalidOperationException(Resources.ProcessorThreadNotStartedException);
         }
-
-        await Processor.TryDisposeAsync();
 
         if (_executionTask != null)
         {
@@ -76,7 +70,6 @@ public class ProcessorThread(string name, IProcessor processor, IServiceScopeFac
     private async Task WorkAsync()
     {
         ManagedThreadId = Environment.CurrentManagedThreadId;
-        State.Add("ManagedThreadId", ManagedThreadId);
 
         var eventArgs = new ProcessorThreadEventArgs(this, ManagedThreadId);
 
@@ -84,13 +77,19 @@ public class ProcessorThread(string name, IProcessor processor, IServiceScopeFac
 
         while (!_cancellationToken.IsCancellationRequested)
         {
-            await _threadingOptions.ProcessorExecuting.InvokeAsync(eventArgs, _cancellationToken);
-
             try
             {
-                using var context = new ProcessorThreadContext(State, _serviceScopeFactory.CreateScope());
+                using var scope = _serviceScopeFactory.CreateScope();
 
-                await Processor.ExecuteAsync(context, _cancellationToken);
+                var processor = scope.ServiceProvider.GetRequiredKeyedService<IProcessor>(ServiceKey);
+
+                await _threadingOptions.ProcessorExecuting.InvokeAsync(new(ServiceKey, ManagedThreadId, processor), _cancellationToken);
+
+                var workPerformed = await processor.ExecuteAsync(_cancellationToken);
+
+                await _processorIdleStrategy.SignalAsync(serviceKey, workPerformed, _cancellationToken);
+                await _threadingOptions.ProcessorExecuted.InvokeAsync(new(ServiceKey, ManagedThreadId, processor, workPerformed), _cancellationToken);
+                await processor.TryDisposeAsync();
             }
             catch (OperationCanceledException)
             {

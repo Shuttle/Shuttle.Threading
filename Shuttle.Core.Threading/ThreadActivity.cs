@@ -2,34 +2,22 @@ using Shuttle.Core.Contract;
 
 namespace Shuttle.Core.Threading;
 
-public class ThreadActivity : IThreadActivity
+public class ThreadActivity(IEnumerable<TimeSpan> durations) : IThreadActivity
 {
-    private readonly TimeSpan[] _durations;
+    private readonly TimeSpan[] _durations = Guard.AgainstEmpty(durations).ToArray();
 
     private int _durationIndex;
 
-    public ThreadActivity(IEnumerable<TimeSpan> waitDurations)
+    public async Task SignalAsync(bool workPerformed, CancellationToken cancellationToken)
     {
-        Guard.AgainstEmpty(waitDurations);
-
-        _durations = waitDurations.ToArray();
-        _durationIndex = 0;
-    }
-
-    public async Task WaitingAsync(CancellationToken cancellationToken)
-    {
-        try
+        if (workPerformed)
+        {
+            _durationIndex = 0;
+        }
+        else
         {
             await Task.Delay(GetSleepTimeSpan(), cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
-        {
-        }
-    }
-
-    public void Working()
-    {
-        _durationIndex = 0;
     }
 
     private TimeSpan GetSleepTimeSpan()

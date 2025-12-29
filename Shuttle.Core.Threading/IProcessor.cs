@@ -2,5 +2,5 @@ namespace Shuttle.Core.Threading;
 
 public interface IProcessor
 {
-    Task ExecuteAsync(IProcessorThreadContext processorThread, CancellationToken cancellationToken = default);
+    ValueTask<bool> ExecuteAsync(CancellationToken cancellationToken = default);
 }

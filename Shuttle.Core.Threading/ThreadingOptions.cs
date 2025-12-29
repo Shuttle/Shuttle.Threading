@@ -4,13 +4,12 @@ namespace Shuttle.Core.Threading;
 
 public class ThreadingOptions
 {
-    public bool IsBackground { get; set; } = true;
     public TimeSpan JoinTimeout { get; set; } = TimeSpan.FromSeconds(15);
 
-    public AsyncEvent<ProcessorThreadPoolCreatedEventArgs> ProcessorThreadPoolCreated { get; set; } = new();
     public AsyncEvent<ProcessorThreadCreatedEventArgs> ProcessorThreadCreated { get; set; } = new();
+    public AsyncEvent<ProcessorExecutingEventArgs> ProcessorExecuting { get; set; } = new();
+    public AsyncEvent<ProcessorExecutedEventArgs> ProcessorExecuted { get; set; } = new();
     public AsyncEvent<ProcessorThreadExceptionEventArgs> ProcessorException { get; set; } = new();
-    public AsyncEvent<ProcessorThreadEventArgs> ProcessorExecuting {get;set;} = new();
     public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadActive {get;set;} = new();
     public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadOperationCanceled {get;set;} = new();
     public AsyncEvent<ProcessorThreadEventArgs> ProcessorThreadStarting {get;set;} = new();

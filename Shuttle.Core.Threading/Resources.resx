@@ -158,4 +158,12 @@
     <value>Cannot remove or replace key '{0}'.</value>
     <comment>{0} = the immutable key</comment>
   </data>
+  <data name="ProcessorIdleOptionsMissingException" xml:space="preserve">
+    <value>There is no 'ProcessorIdleOptions` item with service key '{0}', or the 'Durations' list is empty.</value>
+    <comment>0 = service key</comment>
+  </data>
+  <data name="ProcessorIdleOptionsDurationException" xml:space="preserve">
+    <value>At least one idle duration is required for name '{0}'.</value>
+    <comment>0 = name</comment>
+  </data>
 </root>

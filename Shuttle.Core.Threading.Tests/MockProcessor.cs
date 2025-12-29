@@ -4,9 +4,12 @@ public class MockProcessor(TimeSpan executionDuration) : IProcessor
 {
     public int ExecutionCount { get; private set; }
 
-    public async Task ExecuteAsync(IProcessorThreadContext context, CancellationToken cancellationToken)
+    public async ValueTask<bool> ExecuteAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(executionDuration, cancellationToken).ConfigureAwait(false);
+        
         ExecutionCount++;
+
+        return true;
     }
 }

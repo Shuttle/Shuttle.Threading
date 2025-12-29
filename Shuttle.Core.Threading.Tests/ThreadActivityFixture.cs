@@ -17,11 +17,11 @@ public class ThreadActivityFixture
         var start = DateTime.Now;
         var token = new CancellationToken(false);
 
-        await activity.WaitingAsync(token);
+        await activity.SignalAsync(false, token);
 
         Assert.That((DateTime.Now - start).TotalMilliseconds >= 250, Is.True);
 
-        await activity.WaitingAsync(token);
+        await activity.SignalAsync(false, token);
 
         Assert.That((DateTime.Now - start).TotalMilliseconds >= 750, Is.True);
     }
