@@ -166,4 +166,7 @@
     <value>At least one idle duration is required for name '{0}'.</value>
     <comment>0 = name</comment>
   </data>
+  <data name="ProcessorContextException" xml:space="preserve">
+    <value>Processor execution context has not been initialized.</value>
+  </data>
 </root>

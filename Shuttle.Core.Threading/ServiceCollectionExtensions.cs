@@ -21,7 +21,9 @@ public static class ServiceCollectionExtensions
 
             services
                 .AddSingleton<IValidateOptions<ProcessorIdleOptions>, ProcessorIdleOptionsValidator>()
-                .AddSingleton<IProcessorIdleStrategy, DefaultProcessorIdleStrategy>();
+                .AddSingleton<IProcessorIdleStrategy, DefaultProcessorIdleStrategy>()
+                .AddScoped<ProcessorContextAccessor>()
+                .AddScoped<IProcessorContext>(sp => sp.GetRequiredService<ProcessorContextAccessor>().Context ?? throw new InvalidOperationException(Resources.ProcessorContextException)); 
 
             return services;
         }

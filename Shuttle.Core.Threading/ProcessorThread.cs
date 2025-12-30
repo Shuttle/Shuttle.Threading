@@ -81,6 +81,10 @@ public class ProcessorThread(string serviceKey, IServiceScopeFactory serviceScop
             {
                 using var scope = _serviceScopeFactory.CreateScope();
 
+                var accessor = scope.ServiceProvider.GetRequiredService<ProcessorContextAccessor>();
+
+                accessor.Context = new ProcessorContext(ServiceKey, ManagedThreadId);
+
                 var processor = scope.ServiceProvider.GetRequiredKeyedService<IProcessor>(ServiceKey);
 
                 await _threadingOptions.ProcessorExecuting.InvokeAsync(new(ServiceKey, ManagedThreadId, processor), _cancellationToken);

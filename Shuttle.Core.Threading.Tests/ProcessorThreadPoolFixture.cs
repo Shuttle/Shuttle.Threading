@@ -13,6 +13,7 @@ public class ProcessorThreadPoolFixture
         var semaphore = new SemaphoreSlim(1, 1);
 
         var serviceProvider = new ServiceCollection()
+            .AddThreading()
             .AddKeyedTransient<IProcessor>("thread-pool", (_, _) => new MockProcessor(executionDuration))
             .BuildServiceProvider();
 

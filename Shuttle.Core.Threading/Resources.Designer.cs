@@ -70,6 +70,15 @@ namespace Shuttle.Core.Threading {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Processor execution context has not been initialized..
+        /// </summary>
+        public static string ProcessorContextException {
+            get {
+                return ResourceManager.GetString("ProcessorContextException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [processor thread executing] : managed thread id = {0} / processor type = {1}.
         /// </summary>
         public static string ProcessorExecuting {

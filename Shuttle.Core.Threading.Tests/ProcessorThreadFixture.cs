@@ -13,6 +13,7 @@ public class ProcessorThreadFixture
         var mockProcessor = new MockProcessor(executionDuration);
 
         var serviceProvider = new ServiceCollection()
+            .AddThreading()
             .AddKeyedTransient<IProcessor>("thread", (_, _) => mockProcessor)
             .BuildServiceProvider();
 
