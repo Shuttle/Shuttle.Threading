@@ -1,10 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Shuttle.Core.Threading;
 
-public class ProcessorThreadPool(string serviceKey, int threadCount, IServiceScopeFactory serviceScopeFactory, ThreadingOptions threadingOptions, IProcessorIdleStrategy processorIdleStrategy)
+public class ProcessorThreadPool(string serviceKey, int threadCount, IServiceScopeFactory serviceScopeFactory, ThreadingOptions threadingOptions, IProcessorIdleStrategy processorIdleStrategy, ILoggerFactory? loggerFactory = null)
     : IProcessorThreadPool
 {
+    private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly List<ProcessorThread> _processorThreads = [];
     private bool _disposed;
@@ -64,7 +67,7 @@ public class ProcessorThreadPool(string serviceKey, int threadCount, IServiceSco
 
             while (i++ < ThreadCount)
             {
-                var processorThread = new ProcessorThread(ServiceKey, serviceScopeFactory, threadingOptions, processorIdleStrategy);
+                var processorThread = new ProcessorThread(ServiceKey, serviceScopeFactory, threadingOptions, processorIdleStrategy, _loggerFactory.CreateLogger<ProcessorThread>());
 
                 await threadingOptions.ProcessorThreadCreated.InvokeAsync(new(this, processorThread), cancellationToken);
 
