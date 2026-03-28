@@ -15,14 +15,14 @@ public class AddThreadingFixture
         var provider = new ServiceCollection()
             .AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     options.JoinTimeout = TimeSpan.FromSeconds(1);
                 });
             })
             .AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     options.JoinTimeout = TimeSpan.FromSeconds(5);
                 });
@@ -40,10 +40,10 @@ public class AddThreadingFixture
         var provider = new ServiceCollection()
             .AddThreading(builder =>
             {
-                builder.ConfigureProcessorIdle("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)));
+                builder.Configure("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)));
             }).AddThreading(builder =>
             {
-                builder.ConfigureProcessorIdle("background", options => options.Durations.Add(TimeSpan.FromSeconds(1)));
+                builder.Configure("background", options => options.Durations.Add(TimeSpan.FromSeconds(1)));
             })
             .BuildServiceProvider();
 
@@ -74,13 +74,13 @@ public class AddThreadingFixture
         var provider = new ServiceCollection()
             .AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     options.ProcessorExecuting += handlerA;
                 });
             }).AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     options.ProcessorExecuting += handlerB;
                 });
@@ -103,10 +103,10 @@ public class AddThreadingFixture
         var provider = new ServiceCollection()
             .AddThreading(builder =>
             {
-                builder.ConfigureProcessorIdle("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)));
+                builder.Configure("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)));
             }).AddThreading(builder =>
             {
-                builder.ConfigureProcessorIdle("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(500)));
+                builder.Configure("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(500)));
             })
             .BuildServiceProvider();
 
@@ -131,13 +131,13 @@ public class AddThreadingFixture
         var provider = new ServiceCollection()
             .AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     options.ProcessorExecuting += handler;
                 });
             }).AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     options.ProcessorExecuting += handler;
                 });
@@ -157,13 +157,13 @@ public class AddThreadingFixture
         var provider = new ServiceCollection()
             .AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     instanceFromFirstConfigure = options.ProcessorExecuting;
                 });
             }).AddThreading(builder =>
             {
-                builder.ConfigureThreading(options =>
+                builder.Configure(options =>
                 {
                     Assert.That(options.ProcessorExecuting, Is.SameAs(instanceFromFirstConfigure));
                 });
@@ -179,7 +179,7 @@ public class AddThreadingFixture
         var provider = new ServiceCollection()
             .AddThreading(builder =>
             {
-                builder.ConfigureProcessorIdle("thread", _ =>
+                builder.Configure("thread", _ =>
                 {
                 });
             })

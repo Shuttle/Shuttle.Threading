@@ -41,7 +41,7 @@ public interface IProcessorContext
 
 ### `ProcessorThreadPool`
 
-Manages a pool of processor threads that execute your `IProcessor` implementation. It implements the `IProcessorThreadPool` interface:
+Manages a pool of processor threads that execute your `IProcessor` implementation. It implements the `IProcessorThreadPool` interface and contains a collection of `ProcessorThread` objects:
 
 ```c#
 public interface IProcessorThreadPool : IDisposable, IAsyncDisposable
@@ -80,14 +80,14 @@ public class ProcessorThreadPool(
 Register threading services in your dependency injection container:
 
 ```c#
-services.AddThreading(builder =>
+builder.Services.AddThreading(builder =>
 {
-    builder.ConfigureThreading(options =>
+    builder.Configure(options =>
     {
         options.JoinTimeout = TimeSpan.FromSeconds(30);
     });
     
-    builder.ConfigureProcessorIdle("my-processor", options =>
+    builder.Configure("my-processor", options =>
     {
         options.Durations = new List<TimeSpan>
         {
@@ -99,7 +99,7 @@ services.AddThreading(builder =>
 });
 
 // Register your processor implementation with a service key
-services.AddKeyedScoped<IProcessor, MyProcessor>("my-processor");
+builder.Services.AddKeyedScoped<IProcessor, MyProcessor>("my-processor");
 ```
 
 ### `ThreadingOptions`
@@ -107,15 +107,15 @@ services.AddKeyedScoped<IProcessor, MyProcessor>("my-processor");
 | Property | Type | Default | Description |
 | --- | --- | --- | --- |
 | `JoinTimeout` | `TimeSpan` | `00:00:15` | Duration to wait for processor threads to stop gracefully |
-| `ProcessorThreadCreated` | `AsyncEvent` | - | Raised when a processor thread is created |
-| `ProcessorThreadActive` | `AsyncEvent` | - | Raised when a processor thread becomes active |
-| `ProcessorThreadStarting` | `AsyncEvent` | - | Raised when a processor thread is starting |
-| `ProcessorThreadStopping` | `AsyncEvent` | - | Raised when a processor thread is stopping |
-| `ProcessorThreadStopped` | `AsyncEvent` | - | Raised when a processor thread has stopped |
-| `ProcessorThreadOperationCanceled` | `AsyncEvent` | - | Raised when a processor operation is canceled |
-| `ProcessorExecuting` | `AsyncEvent` | - | Raised before processor execution |
-| `ProcessorExecuted` | `AsyncEvent` | - | Raised after processor execution |
-| `ProcessorException` | `AsyncEvent` | - | Raised when a processor throws an exception |
+| `ProcessorThreadCreated` | `AsyncEvent<ProcessorThreadCreatedEventArgs>` | - | Raised when a processor thread is created |
+| `ProcessorThreadActive` | `AsyncEvent<ProcessorThreadEventArgs>` | - | Raised when a processor thread becomes active |
+| `ProcessorThreadStarting` | `AsyncEvent<ProcessorThreadEventArgs>` | - | Raised when a processor thread is starting |
+| `ProcessorThreadStopping` | `AsyncEvent<ProcessorThreadEventArgs>` | - | Raised when a processor thread is stopping |
+| `ProcessorThreadStopped` | `AsyncEvent<ProcessorThreadEventArgs>` | - | Raised when a processor thread has stopped |
+| `ProcessorThreadOperationCanceled` | `AsyncEvent<ProcessorThreadEventArgs>` | - | Raised when a processor operation is canceled |
+| `ProcessorExecuting` | `AsyncEvent<ProcessorExecutingEventArgs>` | - | Raised before processor execution |
+| `ProcessorExecuted` | `AsyncEvent<ProcessorExecutedEventArgs>` | - | Raised after processor execution |
+| `ProcessorException` | `AsyncEvent<ProcessorThreadExceptionEventArgs>` | - | Raised when a processor throws an exception |
 
 ### `ProcessorIdleOptions`
 
@@ -184,7 +184,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddThreading(threadingBuilder =>
 {
-    threadingBuilder.ConfigureThreading(options =>
+    threadingBuilder.Configure(options =>
     {
         options.JoinTimeout = TimeSpan.FromSeconds(30);
         
@@ -195,7 +195,7 @@ builder.Services.AddThreading(threadingBuilder =>
         });
     });
 
-    threadingBuilder.ConfigureProcessorIdle("my-processor", options =>
+    threadingBuilder.Configure("my-processor", options =>
     {
         options.Durations = new List<TimeSpan>
         {
@@ -282,7 +282,7 @@ Subscribe to events to monitor and react to processor lifecycle and execution:
 ```c#
 services.AddThreading(builder =>
 {
-    builder.ConfigureThreading(options =>
+    builder.Configure(options =>
     {
         options.ProcessorExecuting.Subscribe(async args =>
         {
@@ -314,12 +314,12 @@ services.AddKeyedScoped<IProcessor, HighPriorityProcessor>("high-priority");
 services.AddKeyedScoped<IProcessor, LowPriorityProcessor>("low-priority");
 
 // Configure different idle strategies
-builder.ConfigureProcessorIdle("high-priority", options =>
+builder.Configure("high-priority", options =>
 {
     options.Durations = new List<TimeSpan> { TimeSpan.FromMilliseconds(50) };
 });
 
-builder.ConfigureProcessorIdle("low-priority", options =>
+builder.Configure("low-priority", options =>
 {
     options.Durations = new List<TimeSpan> { TimeSpan.FromSeconds(5) };
 });

@@ -12,9 +12,6 @@ public static class ServiceCollectionExtensions
         {
             Guard.AgainstNull(services);
 
-            services.AddOptions<ThreadingOptions>();
-            services.AddOptions<ProcessorIdleOptions>();
-
             var threadingBuilder = new ThreadingBuilder(services);
 
             builder?.Invoke(threadingBuilder);
