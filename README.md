@@ -14,7 +14,7 @@ This library enables you to create thread pools that continuously execute proces
 
 ## Core Components
 
-### IProcessor
+### `IProcessor`
 
 Implement this interface to define the work that will be executed by processor threads:
 
@@ -27,7 +27,7 @@ public interface IProcessor
 
 The return value indicates whether work was performed (`true`) or not (`false`), which is used by the idle strategy to determine thread behavior.
 
-### IProcessorContext
+### `IProcessorContext`
 
 Available via dependency injection within your processor implementation, providing context about the current execution:
 
@@ -39,9 +39,21 @@ public interface IProcessorContext
 }
 ```
 
-### ProcessorThreadPool
+### `ProcessorThreadPool`
 
-Manages a pool of processor threads that execute your `IProcessor` implementation:
+Manages a pool of processor threads that execute your `IProcessor` implementation. It implements the `IProcessorThreadPool` interface:
+
+```c#
+public interface IProcessorThreadPool : IDisposable, IAsyncDisposable
+{
+    string ServiceKey { get; }
+    IEnumerable<ProcessorThread> ProcessorThreads { get; }
+    int ThreadCount { get; }
+    Task StartAsync(CancellationToken cancellationToken = default);
+    Task StopAsync(CancellationToken cancellationToken = default);
+}
+```
+
 
 ```c#
 public class ProcessorThreadPool(
@@ -49,7 +61,8 @@ public class ProcessorThreadPool(
     int threadCount,
     IServiceScopeFactory serviceScopeFactory,
     ThreadingOptions threadingOptions,
-    IProcessorIdleStrategy processorIdleStrategy
+    IProcessorIdleStrategy processorIdleStrategy,
+    ILoggerFactory? loggerFactory = null
 ) : IProcessorThreadPool
 ```
 
@@ -89,7 +102,7 @@ services.AddThreading(builder =>
 services.AddKeyedScoped<IProcessor, MyProcessor>("my-processor");
 ```
 
-### ThreadingOptions
+### `ThreadingOptions`
 
 | Property | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -104,7 +117,7 @@ services.AddKeyedScoped<IProcessor, MyProcessor>("my-processor");
 | `ProcessorExecuted` | `AsyncEvent` | - | Raised after processor execution |
 | `ProcessorException` | `AsyncEvent` | - | Raised when a processor throws an exception |
 
-### ProcessorIdleOptions
+### `ProcessorIdleOptions`
 
 Configures the idle strategy behavior when processors return `false` (no work performed):
 
@@ -119,7 +132,7 @@ The `Durations` list defines progressive wait times. When no work is performed, 
 
 ## Usage Example
 
-### 1. Implement IProcessor
+### 1. Implement `IProcessor`
 
 ```c#
 public class MyProcessor : IProcessor
@@ -246,7 +259,7 @@ public class MyHostedService : IHostedService
 
 ## Idle Strategies
 
-### IProcessorIdleStrategy
+### `IProcessorIdleStrategy`
 
 Controls thread behavior when processors return `false` (no work performed):
 

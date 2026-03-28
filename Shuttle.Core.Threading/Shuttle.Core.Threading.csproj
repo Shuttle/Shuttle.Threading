@@ -16,9 +16,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
     <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="Shuttle.Core.Contract" Version="21.0.1-rc1" />
-    <PackageReference Include="Shuttle.Core.Reflection" Version="21.0.1-rc1" />
-    <PackageReference Include="Shuttle.Extensions.Options" Version="21.0.1-rc1" />
+    <PackageReference Include="Shuttle.Core.Contract" Version="21.0.1-rc3" />
+    <PackageReference Include="Shuttle.Core.Reflection" Version="21.0.1-rc3" />
+    <PackageReference Include="Shuttle.Extensions.Options" Version="21.0.1-rc3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,7 +38,7 @@
 
   <PropertyGroup>
     <Description>Thread-based processing.</Description>
-    <Version>21.0.1-rc1</Version>
+    <Version>21.0.1-rc3</Version>
     <PackageProjectUrl>https://github.com/shuttle/Shuttle.Core.Threading</PackageProjectUrl>
     <RepositoryUrl>https://github.com/shuttle/Shuttle.Core.Threading.git</RepositoryUrl>
     <PackageTags>shuttle threading processor</PackageTags>
