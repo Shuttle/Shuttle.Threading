@@ -6,15 +6,15 @@ namespace Shuttle.Core.Threading;
 
 public class ThreadingBuilder(IServiceCollection services)
 {
-    public ThreadingBuilder Configure(Action<ThreadingOptions> configure)
+    public ThreadingBuilder Configure(Action<ThreadingOptions> configureOptions)
     {
-        Services.Configure(configure);
+        Services.Configure(configureOptions);
         return this;
     }
 
-    public ThreadingBuilder Configure(string name, Action<ProcessorIdleOptions> configure)
+    public ThreadingBuilder Configure(string name, Action<ProcessorIdleOptions> configureOptions)
     {
-        Services.Configure(name, configure);
+        Services.Configure(name, configureOptions);
         return this;
     }
 
