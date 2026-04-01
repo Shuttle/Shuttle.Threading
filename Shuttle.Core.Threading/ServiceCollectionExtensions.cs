@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Shuttle.Core.Contract;
 
 namespace Shuttle.Core.Threading;
 
@@ -8,13 +7,13 @@ public static class ServiceCollectionExtensions
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddThreading(Action<ThreadingBuilder>? builder = null)
+        public ThreadingBuilder AddThreading(Action<ThreadingOptions>? configureOptions = null)
         {
-            Guard.AgainstNull(services);
-
-            var threadingBuilder = new ThreadingBuilder(services);
-
-            builder?.Invoke(threadingBuilder);
+            services.AddOptions();
+            services.AddOptions<ThreadingOptions>().Configure(options =>
+            {
+                configureOptions?.Invoke(options);
+            });
 
             services
                 .AddSingleton<IValidateOptions<ProcessorIdleOptions>, ProcessorIdleOptionsValidator>()
@@ -22,7 +21,7 @@ public static class ServiceCollectionExtensions
                 .AddScoped<ProcessorContextAccessor>()
                 .AddScoped<IProcessorContext>(sp => sp.GetRequiredService<ProcessorContextAccessor>().Context ?? throw new InvalidOperationException(Resources.ProcessorContextException)); 
 
-            return services;
+            return new(services);
         }
     }
 }

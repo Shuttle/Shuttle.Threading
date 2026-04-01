@@ -13,20 +13,16 @@ public class AddThreadingFixture
     public void Should_allow_last_writer_wins_for_threading_options()
     {
         var provider = new ServiceCollection()
-            .AddThreading(builder =>
-            {
-                builder.Configure(options =>
+            .AddThreading(options =>
                 {
                     options.JoinTimeout = TimeSpan.FromSeconds(1);
-                });
-            })
-            .AddThreading(builder =>
-            {
-                builder.Configure(options =>
+                })
+            .Services
+            .AddThreading(options =>
                 {
                     options.JoinTimeout = TimeSpan.FromSeconds(5);
-                });
-            })
+                })
+            .Services
             .BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptions<ThreadingOptions>>().Value;
@@ -38,13 +34,10 @@ public class AddThreadingFixture
     public void Should_keep_named_processor_idle_options_isolated()
     {
         var provider = new ServiceCollection()
-            .AddThreading(builder =>
-            {
-                builder.Configure("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)));
-            }).AddThreading(builder =>
-            {
-                builder.Configure("background", options => options.Durations.Add(TimeSpan.FromSeconds(1)));
-            })
+            .AddThreading()
+            .ConfigureProcessor("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)))
+            .ConfigureProcessor("background", options => options.Durations.Add(TimeSpan.FromSeconds(1)))
+            .Services
             .BuildServiceProvider();
 
         var monitor = provider.GetRequiredService<IOptionsMonitor<ProcessorIdleOptions>>();
@@ -72,19 +65,16 @@ public class AddThreadingFixture
         };
 
         var provider = new ServiceCollection()
-            .AddThreading(builder =>
-            {
-                builder.Configure(options =>
+            .AddThreading(options =>
                 {
                     options.ProcessorExecuting += handlerA;
-                });
-            }).AddThreading(builder =>
-            {
-                builder.Configure(options =>
+                })
+            .Services
+            .AddThreading(options =>
                 {
                     options.ProcessorExecuting += handlerB;
-                });
-            })
+                })
+            .Services
             .BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptions<ThreadingOptions>>().Value;
@@ -101,13 +91,12 @@ public class AddThreadingFixture
     public void Should_merge_processor_idle_options_from_multiple_AddThreading_calls()
     {
         var provider = new ServiceCollection()
-            .AddThreading(builder =>
-            {
-                builder.Configure("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)));
-            }).AddThreading(builder =>
-            {
-                builder.Configure("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(500)));
-            })
+            .AddThreading()
+            .ConfigureProcessor("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(100)))
+            .Services
+            .AddThreading()
+            .ConfigureProcessor("thread", options => options.Durations.Add(TimeSpan.FromMilliseconds(500)))
+            .Services
             .BuildServiceProvider();
 
         var monitor = provider.GetRequiredService<IOptionsMonitor<ProcessorIdleOptions>>();
@@ -129,19 +118,16 @@ public class AddThreadingFixture
         };
 
         var provider = new ServiceCollection()
-            .AddThreading(builder =>
-            {
-                builder.Configure(options =>
+            .AddThreading(options =>
                 {
                     options.ProcessorExecuting += handler;
-                });
-            }).AddThreading(builder =>
-            {
-                builder.Configure(options =>
+                })
+            .Services
+            .AddThreading(options =>
                 {
                     options.ProcessorExecuting += handler;
-                });
-            })
+                })
+            .Services
             .BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptions<ThreadingOptions>>().Value;
@@ -155,19 +141,16 @@ public class AddThreadingFixture
         AsyncEvent<ProcessorExecutingEventArgs>? instanceFromFirstConfigure = null;
 
         var provider = new ServiceCollection()
-            .AddThreading(builder =>
-            {
-                builder.Configure(options =>
+            .AddThreading(options =>
                 {
                     instanceFromFirstConfigure = options.ProcessorExecuting;
-                });
-            }).AddThreading(builder =>
-            {
-                builder.Configure(options =>
+                })
+            .Services
+            .AddThreading(options =>
                 {
                     Assert.That(options.ProcessorExecuting, Is.SameAs(instanceFromFirstConfigure));
-                });
-            })
+                })
+            .Services
             .BuildServiceProvider();
 
         _ = provider.GetRequiredService<IOptions<ThreadingOptions>>().Value;
@@ -177,12 +160,11 @@ public class AddThreadingFixture
     public void Should_throw_when_processor_idle_options_are_invalid()
     {
         var provider = new ServiceCollection()
-            .AddThreading(builder =>
-            {
-                builder.Configure("thread", _ =>
+            .AddThreading()
+            .ConfigureProcessor("thread", _ =>
                 {
-                });
-            })
+                })
+            .Services
             .AddOptions<ProcessorIdleOptions>()
             .Services
             .BuildServiceProvider();

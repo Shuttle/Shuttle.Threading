@@ -14,6 +14,7 @@ public class ProcessorThreadPoolFixture
 
         var serviceProvider = new ServiceCollection()
             .AddThreading()
+            .Services
             .AddKeyedTransient<IProcessor>("thread-pool", (_, _) => new MockProcessor(executionDuration))
             .BuildServiceProvider();
 
