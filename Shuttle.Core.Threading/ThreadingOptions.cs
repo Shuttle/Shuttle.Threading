@@ -5,7 +5,6 @@ namespace Shuttle.Core.Threading;
 public class ThreadingOptions
 {
     public TimeSpan JoinTimeout { get; set; } = TimeSpan.FromSeconds(15);
-    public List<TimeSpan> ProcessorIdleDurations { get; set; } = [];
 
     public AsyncEvent<ProcessorThreadCreatedEventArgs> ProcessorThreadCreated { get; set; } = new();
     public AsyncEvent<ProcessorExecutingEventArgs> ProcessorExecuting { get; set; } = new();

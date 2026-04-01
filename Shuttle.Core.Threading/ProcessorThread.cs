@@ -6,27 +6,19 @@ using Shuttle.Core.Reflection;
 
 namespace Shuttle.Core.Threading;
 
-public class ProcessorThread : IProcessorThread
+public class ProcessorThread(string serviceKey, IServiceScopeFactory serviceScopeFactory, ThreadingOptions threadingOptions, IProcessorIdleStrategy processorIdleStrategy, ILogger<ProcessorThread>? logger = null)
+    : IProcessorThread
 {
-    private readonly IProcessorIdleStrategy _processorIdleStrategy;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly ThreadingOptions _threadingOptions;
-    private readonly ILogger<ProcessorThread> _logger;
+    private readonly IProcessorIdleStrategy _processorIdleStrategy = Guard.AgainstNull(processorIdleStrategy);
+    private readonly IServiceScopeFactory _serviceScopeFactory = Guard.AgainstNull(serviceScopeFactory);
+    private readonly ThreadingOptions _threadingOptions = Guard.AgainstNull(threadingOptions);
+    private readonly ILogger<ProcessorThread> _logger = logger ?? NullLogger<ProcessorThread>.Instance;
     private CancellationToken _cancellationToken;
     private Task? _executionTask;
     private bool _started;
     public int ManagedThreadId { get; private set; }
 
-    public string ServiceKey { get; }
-
-    public ProcessorThread(string serviceKey, IServiceScopeFactory serviceScopeFactory, ThreadingOptions threadingOptions, IProcessorIdleStrategy processorIdleStrategy, ILogger<ProcessorThread>? logger = null)
-    {
-        ServiceKey = Guard.AgainstNull(serviceKey);
-        _serviceScopeFactory = Guard.AgainstNull(serviceScopeFactory);
-        _threadingOptions = Guard.AgainstNull(threadingOptions);
-        _processorIdleStrategy = Guard.AgainstNull(processorIdleStrategy);
-        _logger = logger ?? NullLogger<ProcessorThread>.Instance;
-    }
+    public string ServiceKey { get; } = Guard.AgainstNull(serviceKey);
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
