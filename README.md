@@ -1,11 +1,11 @@
-# Shuttle.Core.Threading
+# Shuttle.Threading
 
 Provides various classes and interfaces to facilitate thread-based processing using task-based asynchronous patterns.
 
 ## Installation
 
 ```bash
-dotnet add package Shuttle.Core.Threading
+dotnet add package Shuttle.Threading
 ```
 
 ## Overview
