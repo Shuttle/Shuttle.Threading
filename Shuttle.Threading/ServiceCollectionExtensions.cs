@@ -9,7 +9,6 @@ public static class ServiceCollectionExtensions
     {
         public ThreadingBuilder AddThreading(Action<ThreadingOptions>? configureOptions = null)
         {
-            services.AddOptions();
             services.AddOptions<ThreadingOptions>().Configure(options =>
             {
                 configureOptions?.Invoke(options);
